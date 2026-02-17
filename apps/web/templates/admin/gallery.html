@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin · Manage Articles · PubMed Newsroom</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600;7..72,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css?v={{ css_version }}" />
+  </head>
+  <body class="admin">
+    <header class="masthead compact">
+      <div class="brand">
+        <div class="brand-mark">PN</div>
+        <div>
+          <div class="brand-title">PubMed Newsroom</div>
+          <div class="brand-subtitle">Admin · Manage Articles</div>
+        </div>
+      </div>
+      <div class="masthead-actions">
+        <a class="pill" href="/">Public Gallery</a>
+        <a class="pill" href="/admin/search">Search PubMed</a>
+        <a class="pill pill-active" href="/admin/gallery">Admin Gallery</a>
+        <form method="post" action="/admin/logout">
+          <button class="pill pill-muted" type="submit">Log out</button>
+        </form>
+      </div>
+    </header>
+
+    <main class="page">
+      {% if message %}
+      <div class="notice">{{ message }}</div>
+      {% endif %}
+      {% if error %}
+      <div class="notice error">{{ error }}</div>
+      {% endif %}
+
+      <section class="section">
+        <div class="section-header">
+          <h2>Generated Articles</h2>
+          <p class="section-meta">{{ artifacts | length }} items</p>
+        </div>
+
+        {% if artifacts %}
+        <div class="gallery-list">
+          {% for artifact in artifacts %}
+          <div class="list-row">
+            <div>
+              <div class="list-title">{{ artifact.headline }}</div>
+              <div class="list-meta">
+                {{ artifact.journal }} ({{ artifact.year }}) · PMID {{ artifact.pmid }}
+              </div>
+              <div class="list-meta">
+                Search term: {{ artifact.search_term }} · Article Published: {{ artifact.publication_date }} · Published: {{ artifact.published_at }}
+              </div>
+            </div>
+            <div class="list-actions">
+              <form method="post" action="/admin/feature" class="inline-form">
+                <input type="hidden" name="pmid" value="{{ artifact.pmid }}" />
+                <input
+                  class="input small"
+                  type="number"
+                  name="featured_rank"
+                  placeholder="Order"
+                  value="{{ artifact.featured_rank if artifact.featured_rank is not none }}"
+                />
+                <button class="btn btn-ghost" type="submit">Update</button>
+              </form>
+              <form method="post" action="/admin/unpublish" class="inline-form">
+                <input type="hidden" name="pmid" value="{{ artifact.pmid }}" />
+                <button class="btn btn-ghost" type="submit">Unpublish</button>
+              </form>
+              <a class="btn btn-secondary" href="/story/{{ artifact.pmid }}">View</a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <h3>No published items.</h3>
+          <p>Generate an artifact and publish it to populate the gallery.</p>
+        </div>
+        {% endif %}
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin · Review Draft · PubMed Newsroom</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600;7..72,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css?v={{ css_version }}" />
+  </head>
+  <body class="admin">
+    <header class="masthead compact">
+      <div class="brand">
+        <div class="brand-mark">PN</div>
+        <div>
+          <div class="brand-title">PubMed Newsroom</div>
+          <div class="brand-subtitle">Admin · Review Draft</div>
+        </div>
+      </div>
+      <div class="masthead-actions">
+        <a class="pill" href="/">Public Gallery</a>
+        <a class="pill" href="/admin/search">Search PubMed</a>
+        <a class="pill pill-active" href="/admin/gallery">Admin Gallery</a>
+        <form method="post" action="/admin/logout">
+          <button class="pill pill-muted" type="submit">Log out</button>
+        </form>
+      </div>
+    </header>
+
+    {% if not_found %}
+    <main class="page">
+      <section class="section">
+        <div class="empty-state">
+          <h2>Draft not found.</h2>
+          <p>No artifact exists for PMID {{ pmid }}.</p>
+        </div>
+      </section>
+    </main>
+    {% else %}
+    <main class="page story-page">
+      <div class="story-layout">
+        <nav class="story-nav" aria-label="Review sections">
+          <div class="story-nav-title">Review</div>
+          <a class="story-nav-link" href="#publish">Publish</a>
+          <a class="story-nav-link" href="#story">News story</a>
+          <a class="story-nav-link" href="#abstract">Abstract</a>
+          <a class="story-nav-link" href="#prompt">Prompt</a>
+        </nav>
+        <div class="story-content">
+          <section class="section" id="publish">
+            <div class="panel">
+              <div class="panel-header">
+                <h2>Publish</h2>
+                <div class="panel-meta">Draft artifact</div>
+              </div>
+              <form method="post" action="/admin/publish" class="form-stack" data-loading>
+                <input type="hidden" name="pmid" value="{{ artifact.pmid }}" />
+                <label class="field">
+                  <span>Featured order</span>
+                  <input class="input" type="number" name="featured_rank" placeholder="Auto" />
+                </label>
+                <button class="btn btn-primary" type="submit" data-loading-text="Publishing...">Publish</button>
+              </form>
+              {% if message %}
+              <div class="notice">{{ message }}</div>
+              {% endif %}
+            </div>
+          </section>
+
+          <article class="story-hero" id="story">
+            <div class="kicker">Draft artifact</div>
+            <h1>{{ artifact.headline }}</h1>
+            <p class="standfirst">{{ artifact.standfirst }}</p>
+            <div class="story-meta">
+              {% if published_at %}
+              <div class="meta-line">Published {{ published_at }}</div>
+              {% else %}
+              <div class="meta-line">Article Published {{ metadata.publication_date_display }}</div>
+              {% endif %}
+            </div>
+            <div class="story-body">
+              {% for paragraph in artifact.story.story_paragraphs %}
+              <p>{{ paragraph }}</p>
+              {% endfor %}
+              {% if artifact.story.what_happens_next %}
+              <p>{{ artifact.story.what_happens_next }}</p>
+              {% endif %}
+            </div>
+          </article>
+
+          <section class="section" id="abstract">
+            <div class="panel">
+              <div class="panel-header">
+                <h2>Abstract</h2>
+                <div class="panel-meta">
+                  {% if metadata.doi %}
+                  <a class="link" href="https://doi.org/{{ metadata.doi }}" target="_blank" rel="noopener">
+                    DOI
+                  </a>
+                  {% endif %}
+                  <a class="link" href="https://pubmed.ncbi.nlm.nih.gov/{{ artifact.pmid }}/" target="_blank" rel="noopener">
+                    PubMed
+                  </a>
+                </div>
+              </div>
+              <div class="abstract-meta">
+                {% if metadata.title %}
+                <div class="meta-row">
+                  <span class="meta-label">Title</span>
+                  <span class="meta-value">{{ metadata.title }}</span>
+                </div>
+                {% endif %}
+                {% if metadata.authors %}
+                <div class="meta-row">
+                  <span class="meta-label">Authors</span>
+                  <span class="meta-value">
+                    {% if metadata.authors is string %}
+                    {{ metadata.authors }}
+                    {% else %}
+                    {{ metadata.authors | join(", ") }}
+                    {% endif %}
+                  </span>
+                </div>
+                {% endif %}
+                {% if metadata.journal %}
+                <div class="meta-row">
+                  <span class="meta-label">Journal</span>
+                  <span class="meta-value">{{ metadata.journal }}</span>
+                </div>
+                {% endif %}
+                {% if metadata.year %}
+                <div class="meta-row">
+                  <span class="meta-label">Year</span>
+                  <span class="meta-value">{{ metadata.year }}</span>
+                </div>
+                {% endif %}
+                <div class="meta-row">
+                  <span class="meta-label">Search term</span>
+                  <span class="meta-value">{{ metadata.search_term_display }}</span>
+                </div>
+                <div class="meta-row">
+                  <span class="meta-label">Search date</span>
+                  <span class="meta-value">{{ metadata.search_ran_at_display }}</span>
+                </div>
+                <div class="meta-row">
+                  <span class="meta-label">Publication date</span>
+                  <span class="meta-value">{{ metadata.publication_date_display }}</span>
+                </div>
+                <div class="meta-row">
+                  <span class="meta-label">PMID</span>
+                  <span class="meta-value">{{ artifact.pmid }}</span>
+                </div>
+                {% if metadata.pmcid %}
+                <div class="meta-row">
+                  <span class="meta-label">PMCID</span>
+                  <span class="meta-value">{{ metadata.pmcid }}</span>
+                </div>
+                {% endif %}
+                {% if metadata.doi %}
+                <div class="meta-row">
+                  <span class="meta-label">DOI</span>
+                  <span class="meta-value">{{ metadata.doi }}</span>
+                </div>
+                {% endif %}
+              </div>
+              <div class="panel-body">
+                {% for paragraph in artifact.abstract_snapshot.split("\n") if paragraph %}
+                <p>{{ paragraph }}</p>
+                {% endfor %}
+              </div>
+            </div>
+          </section>
+
+          <section class="section" id="prompt">
+            <div class="panel">
+              <div class="panel-header">
+                <h2>Prompt</h2>
+                <button class="btn btn-ghost" type="button" data-copy-target="promptText">Copy</button>
+              </div>
+              <pre id="promptText" class="prompt-text">{{ artifact.prompt_text }}</pre>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+    {% endif %}
+    <script src="/static/app.js?v={{ js_version }}"></script>
+  </body>
+</html>

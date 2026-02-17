@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+if ! command -v uv >/dev/null 2>&1; then
+  echo "uv is required but not installed. Install it first: https://github.com/astral-sh/uv"
+  exit 1
+fi
+
+if [ ! -d ".venv" ]; then
+  uv venv
+fi
+
+uv pip install -r requirements.txt
+
+if [ -f ".env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  source ".env"
+  set +a
+fi
+
+# shellcheck disable=SC2154
+if [ -z "${OPENAI_API_KEY:-}" ]; then
+  echo "OPENAI_API_KEY is not set; story generation will be disabled."
+fi
+
+if [ -z "${PUBMED_EMAIL:-}" ] || [ "${PUBMED_EMAIL}" = "you@example.com" ]; then
+  echo "PUBMED_EMAIL is not set to a real contact email; PubMed search will fail."
+fi
+
+if [ -z "${ADMIN_PASSWORD:-}" ]; then
+  echo "ADMIN_PASSWORD is not set; admin login will fail."
+fi
+
+# shellcheck disable=SC1091
+source .venv/bin/activate
+exec python3 -m apps.web.main

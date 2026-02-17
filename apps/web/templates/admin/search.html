@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin · Search PubMed · PubMed Newsroom</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600;7..72,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css?v={{ css_version }}" />
+  </head>
+  <body class="admin">
+    <header class="masthead compact">
+      <div class="brand">
+        <div class="brand-mark">PN</div>
+        <div>
+          <div class="brand-title">PubMed Newsroom</div>
+          <div class="brand-subtitle">Admin · Search PubMed</div>
+        </div>
+      </div>
+      <div class="masthead-actions">
+        <a class="pill" href="/">Public Gallery</a>
+        <a class="pill pill-active" href="/admin/search">Search PubMed</a>
+        <a class="pill" href="/admin/gallery">Admin Gallery</a>
+        <form method="post" action="/admin/logout">
+          <button class="pill pill-muted" type="submit">Log out</button>
+        </form>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="section">
+        <form class="search-form" method="get" action="/admin/search" data-loading>
+          <div class="field">
+            <span>PubMed topic</span>
+            <input class="input" type="text" name="term" placeholder="microplastics, asthma, sleep" value="{{ term }}" />
+          </div>
+          <input type="hidden" name="sort" value="{{ sort }}" />
+          <button class="btn btn-primary" type="submit" data-loading-text="Searching...">Search</button>
+        </form>
+
+        {% if error %}
+        <div class="notice error">{{ error }}</div>
+        {% endif %}
+        {% if message %}
+        <div class="notice">{{ message }}</div>
+        {% endif %}
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2>Results</h2>
+          <form class="inline-form" method="get" action="/admin/search">
+            <span class="section-meta">{{ results | length }} items</span>
+            <input type="hidden" name="term" value="{{ term }}" />
+            <label class="field">
+              <span>Sort by</span>
+              <select class="input" name="sort" {% if not term %}disabled{% endif %} onchange="this.form.submit()">
+                <option value="relevance" {% if sort == "relevance" %}selected{% endif %}>Relevance</option>
+                <option value="readability" {% if sort == "readability" %}selected{% endif %}>Readability</option>
+              </select>
+            </label>
+          </form>
+        </div>
+
+        {% if results %}
+        <div class="results-grid">
+          {% for record in results %}
+          <div class="card compact" style="animation-delay: {{ loop.index0 * 30 }}ms">
+            <div class="card-meta">
+              <span>{{ record.journal }}</span>
+              <span>{{ record.year }}</span>
+            </div>
+            <h3>{{ record.title }}</h3>
+            {% if record.abstract %}
+            <div class="card-abstract">
+              <div class="card-abstract-title">Abstract</div>
+              {% for paragraph in record.abstract.split("\n") if paragraph %}
+              <p>{{ paragraph }}</p>
+              {% endfor %}
+            </div>
+            {% endif %}
+            <div class="card-footer">
+              <span>PMID {{ record.pmid }}</span>
+              {% if record.readability_score is not none %}
+              <span>Readability {{ "%.2f"|format(record.readability_score) }}</span>
+              {% endif %}
+            </div>
+            <div class="status-row">
+              {% if record.is_published %}
+              <span class="pill">Published</span>
+              {% elif record.has_artifact %}
+              <span class="pill pill-muted">Draft saved</span>
+              {% endif %}
+            </div>
+            <div class="card-actions">
+              {% if record.has_artifact %}
+              <a class="btn btn-secondary" href="/admin/artifact/{{ record.pmid }}">View draft</a>
+              {% endif %}
+              <form method="post" action="/admin/generate" class="inline-form" data-loading>
+                <input type="hidden" name="pmid" value="{{ record.pmid }}" />
+                <input type="hidden" name="term" value="{{ term }}" />
+                <input type="hidden" name="sort" value="{{ sort }}" />
+                <input type="hidden" name="search_ran_at" value="{{ search_ran_at if search_ran_at is not none else '' }}" />
+                {% if record.has_artifact %}
+                <input type="hidden" name="regenerate" value="1" />
+                {% endif %}
+                <button
+                  class="btn btn-ghost"
+                  type="submit"
+                  data-loading-text="{% if record.has_artifact %}Regenerating...{% else %}Generating...{% endif %}"
+                >
+                  {% if record.has_artifact %}Regenerate{% else %}Generate{% endif %}
+                </button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <h3>No results yet.</h3>
+          <p>Run a search to pull studies from PubMed.</p>
+        </div>
+        {% endif %}
+      </section>
+    </main>
+    <script src="/static/app.js?v={{ js_version }}"></script>
+  </body>
+</html>

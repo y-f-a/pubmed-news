@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PubMed Newsroom Gallery</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600;7..72,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css?v={{ css_version }}" />
+  </head>
+  <body>
+    <header class="masthead">
+      <div class="brand">
+        <div class="brand-mark">PN</div>
+        <div>
+          <div class="brand-title">PubMed Newsroom</div>
+          <div class="brand-subtitle">Generating news articles from peer-reviewed research.</div>
+        </div>
+      </div>
+      <div class="masthead-actions">
+        <a class="pill" href="/admin/search">Search PubMed</a>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="section">
+        <div class="section-header">
+          <h2>Article Gallery</h2>
+        </div>
+        {% if artifacts %}
+        <div class="gallery-grid">
+          {% for artifact in artifacts %}
+          <article class="card" style="animation-delay: {{ loop.index0 * 60 }}ms">
+            <h3><a class="card-headline-link" href="/story/{{ artifact.pmid }}">{{ artifact.headline }}</a></h3>
+            <p class="card-intro">
+              {{ artifact.standfirst }}
+              <a class="card-more-link" href="/story/{{ artifact.pmid }}">more</a>
+            </p>
+            <div class="card-footer gallery-card-footer">
+              <span class="card-search-term">Search term: {{ artifact.search_term }}</span>
+              <span class="card-date">Article Published {{ artifact.article_published }} · {{ artifact.journal }}</span>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <h3>No artifacts published yet.</h3>
+          <p>Use the admin panel to generate and publish the first gallery item.</p>
+        </div>
+        {% endif %}
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Generating news articles from peer-reviewed research.</p>
+    </footer>
+  </body>
+</html>

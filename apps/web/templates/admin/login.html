@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Sign In · PubMed Newsroom</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600;7..72,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css?v={{ css_version }}" />
+  </head>
+  <body class="admin">
+    <header class="masthead compact">
+      <div class="brand">
+        <div class="brand-mark">PN</div>
+        <div>
+          <div class="brand-title">PubMed Newsroom</div>
+          <div class="brand-subtitle">Admin · Sign In</div>
+        </div>
+      </div>
+      <div class="masthead-actions">
+        <a class="pill" href="/">Public Gallery</a>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="section narrow">
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Sign in</h2>
+          </div>
+          <form method="post" action="/admin/login" class="form-stack">
+            <input type="hidden" name="next" value="{{ next }}" />
+            <label class="field">
+              <span>Password</span>
+              <input class="input" type="password" name="password" required />
+            </label>
+            {% if error %}
+            <div class="notice error">{{ error }}</div>
+            {% endif %}
+            <button class="btn btn-primary" type="submit">Enter admin</button>
+          </form>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

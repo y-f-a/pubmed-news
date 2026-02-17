@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+if ! command -v uv >/dev/null 2>&1; then
+  echo "uv is required but not installed. Install it first: https://github.com/astral-sh/uv"
+  exit 1
+fi
+
+if [ ! -d ".venv" ]; then
+  uv venv
+fi
+
+uv pip install -r requirements-dev.txt
+
+if [ -f ".env" ]; then
+  set -a
+  # shellcheck disable=SC1091
+  source ".env"
+  set +a
+fi
+
+source .venv/bin/activate
+exec .venv/bin/python -m pytest
